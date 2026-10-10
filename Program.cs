@@ -3,21 +3,33 @@ using MiPrimerApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactPolicy", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddDbContext<DbEmpresaContext>(options =>
 {
-    options.UseMySql(builder.Configuration.GetConnectionString("conexion"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("conexion")));
+    options.UseMySql(
+        builder.Configuration.GetConnectionString("conexion"),
+        ServerVersion.AutoDetect(
+            builder.Configuration.GetConnectionString("conexion")
+        )
+    );
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -25,6 +37,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("ReactPolicy");
 
 app.UseAuthorization();
 
